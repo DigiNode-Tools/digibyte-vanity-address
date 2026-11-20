@@ -90,3 +90,27 @@ describe("WebAssembly agrees with the JavaScript code", () => {
     }
   });
 });
+
+describe("DigiByte vectors checked against DigiByte Core v9.26.7 deriveaddresses (2026-11-20)", () => {
+  const cases = [
+    { key: 1n, net: DGB, kind: "segwit" as const, addr: "dgb1qw508d6qejxtdg4y5r3zarvary0c5xw7kmudfnm", desc: "wpkh(KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn)#gul0776m" },
+    { key: 1n, net: DGB, kind: "taproot" as const, addr: "dgb1pmfr3p9j00pfxjh0zmgp99y8zftmd3s5pmedqhyptwy6lm87hf5ssuuh6f6", desc: "tr(KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn)#efdxzarj" },
+    { key: 2n, net: DGB, kind: "segwit" as const, addr: "dgb1qq6hag67dl53wl99vzg42z8eyzfz2xlkv3zu020", desc: "wpkh(KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU74NMTptX4)#ccxepx3w" },
+    { key: 2n, net: DGB, kind: "taproot" as const, addr: "dgb1pet7ep3czdu9k4wvdlz2fp5p8x2yp7t6ttyqg2c6cmh0lgeuu9lasxtp40h", desc: "tr(KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU74NMTptX4)#ppnxgt0v" },
+    { key: 3n, net: DGB, kind: "segwit" as const, addr: "dgb1q0ht9tyks4vh7p5p904t340cr9nvahy7uxcax6x", desc: "wpkh(KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU74sHUHy8S)#xlnu28tj" },
+    { key: 3n, net: DGB, kind: "taproot" as const, addr: "dgb1pgxxyvcmdncdxs06cudd5yvmwwahaesaj6n3eu7st7x4sw9hrchaq0w4nh0", desc: "tr(KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU74sHUHy8S)#d8h3prcv" },
+    { key: 1n, net: DGBT, kind: "segwit" as const, addr: "dgbt1qw508d6qejxtdg4y5r3zarvary0c5xw7kwk83wk", desc: "wpkh(eaHADzXVU3hvWSN7UFFqDD2iDN2h3HseMDE78P13iYRnXacFLhTH)#7t90k7qd" },
+    { key: 1n, net: DGBT, kind: "taproot" as const, addr: "dgbt1pmfr3p9j00pfxjh0zmgp99y8zftmd3s5pmedqhyptwy6lm87hf5sshy64g3", desc: "tr(eaHADzXVU3hvWSN7UFFqDD2iDN2h3HseMDE78P13iYRnXacFLhTH)#49u3g6gn" },
+    { key: 2n, net: DGBT, kind: "segwit" as const, addr: "dgbt1qq6hag67dl53wl99vzg42z8eyzfz2xlkvygkhhz", desc: "wpkh(eaHADzXVU3hvWSN7UFFqDD2iDN2h3HseMDE78P13iYRnY5T7Ndji)#n8ds0wpd" },
+    { key: 2n, net: DGBT, kind: "taproot" as const, addr: "dgbt1pet7ep3czdu9k4wvdlz2fp5p8x2yp7t6ttyqg2c6cmh0lgeuu9lasdnv6wu", desc: "tr(eaHADzXVU3hvWSN7UFFqDD2iDN2h3HseMDE78P13iYRnY5T7Ndji)#wp7sxy5a" },
+    { key: 3n, net: DGBT, kind: "segwit" as const, addr: "dgbt1q0ht9tyks4vh7p5p904t340cr9nvahy7unjh78t", desc: "wpkh(eaHADzXVU3hvWSN7UFFqDD2iDN2h3HseMDE78P13iYRnYaPgZHar)#j8hpvdm8" },
+    { key: 3n, net: DGBT, kind: "taproot" as const, addr: "dgbt1pgxxyvcmdncdxs06cudd5yvmwwahaesaj6n3eu7st7x4sw9hrchaqykcuky", desc: "tr(eaHADzXVU3hvWSN7UFFqDD2iDN2h3HseMDE78P13iYRnYaPgZHar)#kturhzvn" },
+  ];
+  for (const c of cases) {
+    it(`${c.net.id} ${c.kind} key ${c.key}`, () => {
+      const k = bigIntToBytes(c.key);
+      expect(address(k, c.kind, c.net)).toBe(c.addr);
+      expect(descriptor(k, c.kind, c.net)).toBe(c.desc);
+    });
+  }
+});

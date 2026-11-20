@@ -1,6 +1,6 @@
 {
   "name": "digibyte-vanity-address",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Make a DigiByte vanity address in your browser. Keys never leave your computer.",
   "license": "SEE LICENSE IN LICENCE.md",
@@ -8,7 +8,7 @@
   "scripts": {
     "build:wasm": "node build-wasm.mjs",
     "build": "npm run build:wasm && node build.mjs",
-    "test": "npm run build:wasm && vitest run && cd wasm && cargo test --release",
+    "test": "npm run build:wasm && vitest run && cd wasm && cargo test --release --locked",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -77,17 +77,28 @@ export class Search {
     this.on.progress(this.total(), seconds > 0 ? this.total() / seconds : 0);
     if (m.type !== "found") return;
 
-    // Work out the key ourselves and check it with a separate library.
-    const key = addOffset(this.starts[i], BigInt(m.offset));
-    const addr = address(key, this.opts.kind, this.opts.net);
+    // Stop every thread first, then work out the key ourselves and check it
+    // with a separate library. Nothing is shown unless the check passes.
+    const start = this.starts[i].slice();
     const total = this.total();
     this.stop();
-    if (!addressMatches(addr, this.opts.kind, this.opts.net, this.opts.mode, this.opts.pattern)) {
-      key.fill(0);
-      this.on.failed("A check failed, so no address was shown. Please try again, and tell us if it keeps happening.");
+    let key: Uint8Array | null = null;
+    let addr = "";
+    try {
+      key = addOffset(start, BigInt(m.offset));
+      addr = address(key, this.opts.kind, this.opts.net);
+    } catch {
+      key?.fill(0);
+      key = null;
+    } finally {
+      start.fill(0);
+    }
+    if (key && addressMatches(addr, this.opts.kind, this.opts.net, this.opts.mode, this.opts.pattern)) {
+      this.on.found(key, addr, total);
       return;
     }
-    this.on.found(key, addr, total);
+    key?.fill(0);
+    this.on.failed("A check failed, so no address was shown. Please try again, and tell us if it keeps happening.");
   }
 
   private fail(message: string): void {

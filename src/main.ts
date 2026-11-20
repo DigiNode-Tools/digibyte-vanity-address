@@ -32,6 +32,9 @@ const patternInput = $<HTMLInputElement>("pattern");
 
 let search: Search | null = null;
 let startedAt = 0;
+// Has the person saved the private key (backup, copy or "I've stored it")?
+// Until then the address can't be copied, and discarding it asks first.
+let saved = false;
 let current: { key: Uint8Array; addr: string; kind: AddressKind; net: Network; mode: Mode; text: string } | null = null;
 
 function settings() {
@@ -179,6 +182,10 @@ function showResult(): void {
   $("key-box").hidden = true;
   $("show-key").textContent = "Show private key";
   $("r-taproot-note").hidden = current.kind !== "taproot";
+  $("r-testnet").hidden = !current.net.testnet;
+  $("r-testnet-key").hidden = !current.net.testnet;
+  setSaved(false);
+  $("discard").hidden = true;
   $("result").hidden = false;
   $("result").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -200,6 +207,13 @@ function toggleKey(): void {
   $("show-key").textContent = "Hide private key";
 }
 
+function setSaved(value: boolean): void {
+  saved = value;
+  $<HTMLInputElement>("saved").checked = value;
+  $("addr-tools").hidden = !value;
+  $("save-first").hidden = value;
+}
+
 function hideKey(): void {
   for (const id of ["r-wif", "r-wif-qr", "r-descriptor", "r-import"]) $(id).textContent = "";
   $("key-box").hidden = true;
@@ -208,6 +222,8 @@ function hideKey(): void {
 
 function clearResult(): void {
   hideKey();
+  setSaved(false);
+  $("discard").hidden = true;
   current?.key.fill(0);
   current = null;
   $("r-address").textContent = "";
@@ -229,6 +245,7 @@ async function copy(text: string, what: string): Promise<void> {
     ok = document.execCommand("copy");
     area.value = "";
   }
+  if (ok && what === "Private key") setSaved(true);
   const msg = $("copied");
   msg.textContent = ok ? `${what} copied.` : "Copying isn't allowed here. Select the text and copy it yourself.";
   msg.className = ok ? "status ok" : "status error";
@@ -256,6 +273,16 @@ function download(): void {
   a.download = `dgb-vanity-${current.addr.slice(-8)}.txt`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setSaved(true);
+}
+
+// Clear and "Find another" throw the key away: ask first if it hasn't been saved.
+let afterDiscard: (() => void) | null = null;
+function discardThen(action: () => void): void {
+  if (!current || saved) return action();
+  afterDiscard = action;
+  $("discard").hidden = false;
+  $("discard-no").focus();
 }
 
 form.addEventListener("input", updateForm);
@@ -272,10 +299,27 @@ patternInput.addEventListener("keydown", (e) => {
 });
 $("stop").addEventListener("click", stopSearch);
 $("show-key").addEventListener("click", toggleKey);
-$("clear").addEventListener("click", clearResult);
-$("again").addEventListener("click", () => {
-  clearResult();
-  startSearch();
+$("clear").addEventListener("click", () => discardThen(clearResult));
+$("again").addEventListener("click", () =>
+  discardThen(() => {
+    clearResult();
+    startSearch();
+  }),
+);
+$("discard-yes").addEventListener("click", () => {
+  const action = afterDiscard;
+  afterDiscard = null;
+  action?.();
+});
+$("discard-no").addEventListener("click", () => {
+  afterDiscard = null;
+  $("discard").hidden = true;
+});
+$<HTMLInputElement>("saved").addEventListener("change", (e) => setSaved((e.target as HTMLInputElement).checked));
+// Closing or reloading the page throws the key away too. Browsers show their
+// own "leave this page?" warning (not inside the website's sandboxed frame).
+window.addEventListener("beforeunload", (e) => {
+  if (current && !saved) e.preventDefault();
 });
 $("download").addEventListener("click", download);
 for (const b of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {

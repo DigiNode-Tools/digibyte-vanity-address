@@ -120,6 +120,10 @@ button.small { padding: 4px 10px; font-size: .85rem; border-width: 1px; }
 pre { white-space: pre-wrap; word-break: break-all; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: .85rem; }
 ol, ul { padding-left: 1.3em; }
 .foot { font-size: .85rem; text-align: center; margin: 18px 0 0; }
+.badge { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 2px 8px; border-radius: 6px; background: var(--bad); color: var(--bg); font-size: .75rem; font-weight: 700; letter-spacing: .03em; }
+.save-first { margin: 0 0 12px; font-weight: 600; color: var(--text-strong); }
+.saved-check { margin: 4px 0 14px; font-weight: 600; color: var(--text-strong); }
+.discard { margin-top: 14px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 [hidden] { display: none !important; }
 </style>
@@ -184,9 +188,10 @@ ol, ul { padding-left: 1.3em; }
   </section>
 
   <section class="card" id="result" hidden>
-    <h2>Your new address</h2>
+    <h2>Your new address <span class="badge" id="r-testnet" hidden>TESTNET – not real DGB</span></h2>
     <p class="found-address" id="r-address"></p>
-    <div class="qr-row">
+    <p class="save-first" id="save-first">Save the private key before you use this address: show it below, then write it down or download the backup.</p>
+    <div class="qr-row" id="addr-tools" hidden>
       <div class="qr" id="r-address-qr" role="img" aria-label="QR code of the address"></div>
       <div>
         <p><button type="button" class="small" data-copy="address">Copy address</button></p>
@@ -202,16 +207,17 @@ ol, ul { padding-left: 1.3em; }
     <div class="buttons"><button type="button" id="show-key">Show private key</button></div>
 
     <div id="key-box" hidden>
-      <div class="label" style="margin-top:14px">Private key (WIF)</div>
+      <div class="label" style="margin-top:14px">Private key (WIF) <span class="badge" id="r-testnet-key" hidden>TESTNET</span></div>
       <div class="secret" id="r-wif"></div>
       <div class="qr-row">
         <div class="qr" id="r-wif-qr" role="img" aria-label="QR code of the private key"></div>
         <div>
           <p><button type="button" class="small" data-copy="wif">Copy private key</button></p>
           <p><button type="button" class="small" id="download">Download backup (.txt)</button></p>
-          <p class="hint">Copying puts the key on the clipboard, where other apps can read it. Clear it afterwards by copying something else.</p>
+          <p class="hint">Writing the key down or printing it is safest. A copied key sits on the clipboard, where other apps (and your other devices, if your clipboard syncs) can read it. The backup goes to your Downloads folder, which may be synced to iCloud, OneDrive or Google Drive.</p>
         </div>
       </div>
+      <label class="check saved-check"><input type="checkbox" id="saved"> <span>I've stored the private key safely</span></label>
 
       <details>
         <summary>How to use this key</summary>
@@ -229,6 +235,11 @@ ol, ul { padding-left: 1.3em; }
     <div class="buttons" style="margin-top:16px">
       <button type="button" class="primary" id="again">Find another</button>
       <button type="button" id="clear">Clear</button>
+    </div>
+    <div class="warn discard" id="discard" hidden role="alertdialog" aria-labelledby="discard-title">
+      <p id="discard-title"><b>You haven't saved the private key yet.</b></p>
+      <p>If you carry on, this address's key is gone for good, and any DGB sent to the address can never be spent.</p>
+      <div class="buttons"><button type="button" id="discard-yes">Discard this address</button><button type="button" class="primary" id="discard-no">Go back</button></div>
     </div>
     <p class="status ok" id="copied" role="status" hidden></p>
   </section>

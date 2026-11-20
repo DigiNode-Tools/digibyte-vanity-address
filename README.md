@@ -33,10 +33,19 @@ These are averages: you may be lucky or unlucky.
 - **Nothing leaves your device.** The page has a strict Content-Security-Policy (`default-src 'none'; connect-src 'none'`), so it can't load or send anything, even if it wanted to. The search code (WebAssembly) has no imports at all: it can only do arithmetic.
 - **Two independent checks.** The fast search is written in Rust (RustCrypto's `k256`, `sha2`, `ripemd`). It only reports *where* it found a match. The page then rebuilds the key and address with separate, audited JavaScript libraries (`@noble/curves`, `@noble/hashes`, `@scure/base`) and only shows a result if both agree.
 - **Strong randomness.** Each search thread starts from a random key from `crypto.getRandomValues`, the browser's cryptographic random number generator, then checks the next keys in order.
-- **Nothing is stored.** No cookies or local storage. The private key is hidden until you ask to see it, and is wiped when you clear the result or close the page.
+- **Nothing is stored.** No cookies or local storage. The private key is hidden until you ask to see it, and is removed from the page when you clear the result or close it. (A browser can't guarantee that every copy in memory is erased, so close the tab when you're done.)
+- **Hard to lose by accident.** The address can't be copied until you've saved the private key (backup, copy, or ticking "I've stored it"), and clearing or finding another asks first.
 - **On diginode.tools** the tool runs inside a sandboxed frame with its own security headers, so nothing else on the website (such as analytics) can read it. The website serves the exact released file, checked against its SHA-256.
 
-For the most safety: download `digibyte-vanity-address.html`, check its SHA-256 against the release's `SHA256SUMS`, disconnect from the internet, open the file, make your address, and store the key safely before reconnecting.
+The website is fine for everyday use. **If you're wary, or the address will hold a lot of DGB, this is the safest way:**
+
+1. Download `digibyte-vanity-address.html` from the [latest release](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest) and check it (below).
+2. Turn off Wi-Fi and unplug any network cable.
+3. Open the file in a **private or incognito window**: browser extensions are switched off there, so none can read the page.
+4. Make your address. **Write the private key down or print it**, rather than copying it (clipboards can sync to other devices) or saving the backup in a synced folder.
+5. **Close the browser window before you reconnect.**
+
+For large amounts, use a computer you trust and keep up to date: no tool can protect a key from malware already on it.
 
 ## Check the release yourself
 
