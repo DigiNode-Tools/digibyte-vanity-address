@@ -1,0 +1,25 @@
+[package]
+name = "vanity-search"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+license-file = "../LICENCE.md"
+description = "Fast vanity address search loop for DigiByte Vanity Address (WebAssembly)"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+k256 = { version = "=0.14.0", default-features = false, features = ["arithmetic", "precomputed-tables", "critical-section"] }
+sha2 = { version = "=0.11.1", default-features = false }
+ripemd = { version = "=0.2.0", default-features = false }
+# Needed by k256's precomputed base-point table; WebAssembly here is single-threaded.
+critical-section = { version = "=1.2.0", features = ["std"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

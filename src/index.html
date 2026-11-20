@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<meta name="referrer" content="no-referrer">
+<title>DigiByte Vanity Address</title>
+<style>
+:root {
+  color-scheme: light;
+  --navy: #002352;
+  --accent: #0066cc;
+  --bg: #ffffff;
+  --bg-soft: #f4f6f9;
+  --text: #4a4f58;
+  --text-strong: #23262e;
+  --border: #dfe3ea;
+  --mark: #ffe9a8;
+  --mark-text: #3d2c00;
+  --warn-bg: #fff6e0;
+  --warn-border: #f0c96a;
+  --ok: #1d7f4e;
+  --bad: #b3261e;
+  --qr-bg: #ffffff;
+  --qr-fg: #002352;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --accent: #6cb4ff;
+    --bg: #0b1426;
+    --bg-soft: #111d35;
+    --text: #c3cad6;
+    --text-strong: #eef2f8;
+    --border: #22314f;
+    --mark: #6b5310;
+    --mark-text: #fff3cf;
+    --warn-bg: #2b2412;
+    --warn-border: #7a6122;
+    --ok: #5fd39a;
+    --bad: #ff8a80;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --accent: #6cb4ff;
+  --bg: #0b1426;
+  --bg-soft: #111d35;
+  --text: #c3cad6;
+  --text-strong: #eef2f8;
+  --border: #22314f;
+  --mark: #6b5310;
+  --mark-text: #fff3cf;
+  --warn-bg: #2b2412;
+  --warn-border: #7a6122;
+  --ok: #5fd39a;
+  --bad: #ff8a80;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 16px; }
+body.embedded { padding: 0; background: transparent; }
+html:has(body.embedded) { background: transparent; }
+main { max-width: 760px; margin: 0 auto; }
+h1 { color: var(--text-strong); font-size: 1.6rem; font-weight: 600; margin: 0 0 4px; }
+h2 { color: var(--text-strong); font-size: 1.15rem; font-weight: 600; margin: 0 0 12px; }
+.lead { margin: 0 0 20px; }
+.embedded .standalone { display: none; }
+.card { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 0 0 16px; }
+fieldset { border: 0; padding: 0; margin: 0 0 18px; }
+legend, .label { display: block; color: var(--text-strong); font-weight: 600; margin: 0 0 8px; padding: 0; }
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.choice { position: relative; display: block; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 10px 12px 10px 40px; cursor: pointer; }
+.choice input { position: absolute; left: 14px; top: 14px; margin: 0; accent-color: var(--accent); }
+.choice b { color: var(--text-strong); font-weight: 600; }
+.choice code { font-size: .95em; }
+.choice small { display: block; font-size: .85rem; }
+.choice:has(input:checked) { border-color: var(--accent); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.choices.inline .choice { padding: 8px 12px 8px 38px; }
+.choices.inline .choice input { top: 12px; }
+input[type=text] { width: 100%; font: 1.25rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text-strong); }
+input[type=text]:focus { outline: none; border-color: var(--accent); }
+input[type=text][aria-invalid=true] { border-color: var(--bad); }
+.preview { font: 1.05rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin: 10px 0 0; word-break: break-all; color: var(--text); }
+mark { background: var(--mark); color: var(--mark-text); border-radius: 3px; padding: 0 1px; }
+.hint { font-size: .9rem; margin: 8px 0 0; }
+.error { color: var(--bad); }
+.odds { margin: 10px 0 0; font-size: .95rem; }
+.odds.slow { color: var(--bad); }
+.threads { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.threads input { flex: 1 1 200px; accent-color: var(--accent); }
+details { margin: 0 0 18px; }
+summary { cursor: pointer; color: var(--accent); }
+details > div { margin-top: 10px; }
+.check { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.check input { margin-top: 5px; accent-color: var(--accent); }
+.buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+button { font: inherit; font-weight: 600; border-radius: 10px; padding: 10px 18px; cursor: pointer; border: 2px solid var(--accent); background: var(--bg); color: var(--accent); }
+button.primary { background: var(--accent); color: var(--bg); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.small { padding: 4px 10px; font-size: .85rem; border-width: 1px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 0 0 14px; }
+.stat b { display: block; color: var(--text-strong); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.stat span { font-size: .85rem; }
+.bar { height: 10px; border-radius: 5px; background: var(--border); overflow: hidden; }
+.bar div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.found-address { font: 1.2rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text-strong); word-break: break-all; margin: 0 0 12px; }
+.qr-row { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin: 0 0 12px; }
+.qr { background: var(--qr-bg); border-radius: 8px; padding: 8px; line-height: 0; }
+.qr svg { width: 168px; height: 168px; }
+.secret { font: .95rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text-strong); word-break: break-all; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin: 6px 0 10px; }
+.warn { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px; }
+.warn p { margin: 0 0 6px; }
+.warn p:last-child { margin: 0; }
+.status { margin: 10px 0 0; }
+.ok { color: var(--ok); }
+pre { white-space: pre-wrap; word-break: break-all; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: .85rem; }
+ol, ul { padding-left: 1.3em; }
+.foot { font-size: .85rem; text-align: center; margin: 18px 0 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header class="standalone">
+    <h1>DigiByte Vanity Address</h1>
+    <p class="lead">Make a DigiByte address that starts or ends with letters you choose. Everything happens on this device: nothing is sent anywhere.</p>
+  </header>
+
+  <form id="form" class="card" autocomplete="off" novalidate>
+    <fieldset>
+      <legend>Address type</legend>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="kind" value="segwit" checked> <b>SegWit</b> <code class="start-segwit">dgb1q…</code><small>Works with almost every DigiByte wallet. Fastest to search.</small></label>
+        <label class="choice"><input type="radio" name="kind" value="taproot"> <b>Taproot</b> <code class="start-taproot">dgb1p…</code><small>The newest type. Fewer wallets can import it, and it's slower to search.</small></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Your letters should</legend>
+      <div class="choices inline">
+        <label class="choice"><input type="radio" name="mode" value="prefix" checked> come first</label>
+        <label class="choice"><input type="radio" name="mode" value="suffix"> come last</label>
+      </div>
+    </fieldset>
+
+    <label class="label" for="pattern">Letters and numbers</label>
+    <input type="text" id="pattern" maxlength="20" spellcheck="false" autocapitalize="off" placeholder="e.g. dgb" aria-describedby="pattern-help">
+    <p class="preview" id="preview" aria-live="polite"></p>
+    <p class="hint" id="pattern-help">Use lowercase letters and the numbers 0 and 2–9. Addresses never contain <b>b</b>, <b>i</b>, <b>o</b> or <b>1</b>.</p>
+    <p class="odds" id="odds"></p>
+
+    <details>
+      <summary>More options</summary>
+      <div>
+        <div class="label" id="threads-label">Processor cores to use</div>
+        <div class="threads"><input type="range" id="threads" min="1" max="4" value="2" aria-labelledby="threads-label"> <span id="threads-out"></span></div>
+        <p class="hint">More cores search faster, but the computer gets warmer and may feel slower while it runs.</p>
+        <label class="check"><input type="checkbox" id="testnet"> <span>Testnet address (<code>dgbt1…</code>), for testing with testnet coins only</span></label>
+      </div>
+    </details>
+
+    <div class="buttons">
+      <button type="button" class="primary" id="start">Start search</button>
+      <button type="button" id="stop" hidden>Stop</button>
+    </div>
+    <p class="status error" id="form-error" role="alert" hidden></p>
+  </form>
+
+  <section class="card" id="progress" hidden aria-live="polite">
+    <h2>Searching…</h2>
+    <div class="stats">
+      <div class="stat"><b id="st-checked">0</b><span>addresses checked</span></div>
+      <div class="stat"><b id="st-speed">–</b><span>per second</span></div>
+      <div class="stat"><b id="st-time">0s</b><span>time so far</span></div>
+      <div class="stat"><b id="st-chance">0%</b><span>chance found by now</span></div>
+    </div>
+    <div class="bar" aria-hidden="true"><div id="st-bar"></div></div>
+    <p class="hint" id="st-note"></p>
+  </section>
+
+  <section class="card" id="result" hidden>
+    <h2>Your new address</h2>
+    <p class="found-address" id="r-address"></p>
+    <div class="qr-row">
+      <div class="qr" id="r-address-qr" role="img" aria-label="QR code of the address"></div>
+      <div>
+        <p><button type="button" class="small" data-copy="address">Copy address</button></p>
+        <p class="hint">This is safe to share. People send DGB to this address.</p>
+      </div>
+    </div>
+
+    <div class="warn">
+      <p><b>The private key is the only way to spend coins sent to this address.</b></p>
+      <p>Anyone who sees it can take the coins. Write it down or store it safely before you send any DGB to the address, and send a small amount first to test it. If you lose it, nobody can recover the coins.</p>
+    </div>
+
+    <div class="buttons"><button type="button" id="show-key">Show private key</button></div>
+
+    <div id="key-box" hidden>
+      <div class="label" style="margin-top:14px">Private key (WIF)</div>
+      <div class="secret" id="r-wif"></div>
+      <div class="qr-row">
+        <div class="qr" id="r-wif-qr" role="img" aria-label="QR code of the private key"></div>
+        <div>
+          <p><button type="button" class="small" data-copy="wif">Copy private key</button></p>
+          <p><button type="button" class="small" id="download">Download backup (.txt)</button></p>
+          <p class="hint">Copying puts the key on the clipboard, where other apps can read it. Clear it afterwards by copying something else.</p>
+        </div>
+      </div>
+
+      <details>
+        <summary>How to use this key</summary>
+        <div>
+          <p><b>DigiByte Core</b> (Window → Console, or <code>digibyte-cli</code>): import it into a wallet with this command.</p>
+          <pre id="r-import"></pre>
+          <p class="hint">Change <code>"now"</code> to <code>0</code> if the address has already received DGB, so DigiByte Core looks for older payments (this takes a while).</p>
+          <p><b>Other wallets:</b> look for "Import private key" or "Sweep". Sweeping moves the coins to the wallet's own address, so the vanity address is only used once. <span id="r-taproot-note" hidden>Many wallets can't import a single Taproot key yet; check yours first.</span></p>
+          <p><b>Descriptor</b> (for wallets that ask for one):</p>
+          <pre id="r-descriptor"></pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="buttons" style="margin-top:16px">
+      <button type="button" class="primary" id="again">Find another</button>
+      <button type="button" id="clear">Clear</button>
+    </div>
+    <p class="status ok" id="copied" role="status" hidden></p>
+  </section>
+
+  <p class="foot">DigiByte Vanity Address __VERSION__ · runs on this device only<span class="standalone"> · by DigiNode Tools · diginode.tools</span></p>
+</main>
+<textarea class="sr" id="copy-area" tabindex="-1" aria-hidden="true"></textarea>
+<script>__SCRIPT__</script>
+</body>
+</html>
