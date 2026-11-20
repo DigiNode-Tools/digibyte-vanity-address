@@ -300,9 +300,11 @@ if (embedded) {
     const t = (e.data as { theme?: unknown })?.theme;
     if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
   });
+  // Measure the content itself: the document's own height never shrinks below the frame's.
+  const main = document.querySelector("main")!;
   const post = () =>
-    window.parent.postMessage({ type: "dgb-vanity-height", height: document.documentElement.scrollHeight }, "*");
-  new ResizeObserver(post).observe(document.body);
+    window.parent.postMessage({ type: "dgb-vanity-height", height: Math.ceil(main.getBoundingClientRect().height) + 4 }, "*");
+  new ResizeObserver(post).observe(main);
   post();
 }
 
