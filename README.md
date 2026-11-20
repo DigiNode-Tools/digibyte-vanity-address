@@ -2,7 +2,7 @@
 
 Make a DigiByte address that starts or ends with letters you choose, like `dgb1qdgnd…` or `dgb1q…cafe`. It runs entirely in your web browser: your private key is made on your own device and is never sent anywhere.
 
-**Use it at [diginode.tools/digibyte-vanity-address](https://diginode.tools/digibyte-vanity-address/)**, or download `vanity.html` from the [latest release](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest) and open it on a computer that isn't connected to the internet.
+**Use it at [diginode.tools/digibyte-vanity-address](https://diginode.tools/digibyte-vanity-address/)**, or [download `digibyte-vanity-address.html`](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest/download/digibyte-vanity-address.html) from the [latest release](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest) and open it on a computer that isn't connected to the internet.
 
 Part of [DigiNode Tools](https://diginode.tools).
 
@@ -36,15 +36,15 @@ These are averages: you may be lucky or unlucky.
 - **Nothing is stored.** No cookies or local storage. The private key is hidden until you ask to see it, and is wiped when you clear the result or close the page.
 - **On diginode.tools** the tool runs inside a sandboxed frame with its own security headers, so nothing else on the website (such as analytics) can read it. The website serves the exact released file, checked against its SHA-256.
 
-For the most safety: download `vanity.html`, check its SHA-256 against the release's `SHA256SUMS`, disconnect from the internet, open the file, make your address, and store the key safely before reconnecting.
+For the most safety: download `digibyte-vanity-address.html`, check its SHA-256 against the release's `SHA256SUMS`, disconnect from the internet, open the file, make your address, and store the key safely before reconnecting.
 
 ## Check the release yourself
 
 Every release is built by GitHub Actions from the tagged source, with a [build provenance attestation](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations):
 
 ```sh
-shasum -a 256 vanity.html                  # compare with SHA256SUMS
-gh attestation verify vanity.html --repo DigiNode-Tools/digibyte-vanity-address
+shasum -a 256 digibyte-vanity-address.html                  # compare with SHA256SUMS
+gh attestation verify digibyte-vanity-address.html --repo DigiNode-Tools/digibyte-vanity-address
 ```
 
 Or build it yourself and compare the SHA-256 (needs Node.js and Rust; the Rust version is pinned in `rust-toolchain.toml`):
@@ -52,7 +52,7 @@ Or build it yourself and compare the SHA-256 (needs Node.js and Rust; the Rust v
 ```sh
 npm ci
 npm test
-npm run build     # writes dist/vanity.html and dist/SHA256SUMS
+npm run build     # writes dist/digibyte-vanity-address.html and dist/SHA256SUMS
 ```
 
 ## How the search works

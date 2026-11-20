@@ -1,4 +1,4 @@
-// Builds dist/vanity.html: one self-contained file with the page, the search
+// Builds dist/digibyte-vanity-address.html: one self-contained file with the page, the search
 // worker and the WebAssembly search inside it, plus dist/SHA256SUMS.
 //
 //   npm run build      (builds the WebAssembly first, then this script)
@@ -53,8 +53,8 @@ const html = template
   .replace("__SCRIPT__", () => script);
 
 mkdirSync("dist", { recursive: true });
-writeFileSync("dist/vanity.html", html);
+writeFileSync("dist/digibyte-vanity-address.html", html);
 writeFileSync("dist/csp.txt", csp + "\n");
 const sum = createHash("sha256").update(html).digest("hex");
-writeFileSync("dist/SHA256SUMS", `${sum}  vanity.html\n`);
-console.log(`dist/vanity.html  ${version}  ${(html.length / 1024).toFixed(0)} KB  sha256 ${sum}`);
+writeFileSync("dist/SHA256SUMS", `${sum}  digibyte-vanity-address.html\n`);
+console.log(`dist/digibyte-vanity-address.html  ${version}  ${(html.length / 1024).toFixed(0)} KB  sha256 ${sum}`);
