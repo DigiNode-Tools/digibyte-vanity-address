@@ -1,6 +1,6 @@
 # DigiByte Vanity Address
 
-Make a DigiByte address that starts or ends with letters you choose, like `dgb1qdgnd…` or `dgb1q…dgb`. It runs entirely in your web browser: your private key is made on your own device and is never sent anywhere.
+Make a DigiByte address that starts or ends with letters you choose, like `dgb1qdgnd…` or `dgb1q…cafe`. It runs entirely in your web browser: your private key is made on your own device and is never sent anywhere.
 
 **Use it at [diginode.tools/digibyte-vanity-address](https://diginode.tools/digibyte-vanity-address/)**, or download `vanity.html` from the [latest release](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest) and open it on a computer that isn't connected to the internet.
 
