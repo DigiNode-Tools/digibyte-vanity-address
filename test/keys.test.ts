@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { NETWORKS, type Network } from "../src/chains.ts";
 import { addOffset, address, bigIntToBytes, descriptor, descriptorChecksum, N, randomKey, witnessProgram, wif } from "../src/keys.ts";
-import { addressMatches, checkPattern, patternValues } from "../src/pattern.ts";
+import { addressMatches, checkPattern, expectedTries, patternValues } from "../src/pattern.ts";
 
 const BITCOIN: Network = { id: "btc", name: "Bitcoin", ticker: "BTC", hrp: "bc", wif: 128, testnet: false };
 const DGB = NETWORKS[0];
@@ -31,6 +31,21 @@ describe("well-known vectors", () => {
 
   it("keys wrap around the group order", () => {
     expect(addOffset(bigIntToBytes(N - 1n), 2n)).toEqual(one);
+  });
+});
+
+describe("estimates", () => {
+  it("anywhere counts every position after the fixed start", () => {
+    // SegWit: 38 characters after dgb1q, so a 6-letter word fits in 33 places.
+    expect(expectedTries(6, "anywhere", "segwit")).toBe(Math.ceil(32 ** 6 / 33));
+    expect(expectedTries(6, "prefix", "segwit")).toBe(32 ** 6);
+    // Taproot: 58 characters after dgb1p.
+    expect(expectedTries(6, "anywhere", "taproot")).toBe(Math.ceil(32 ** 6 / 53));
+  });
+  it("anywhere matches the start, the middle and the checksum", () => {
+    const a = address(bigIntToBytes(9n), "segwit", DGB);
+    const rest = a.slice(5);
+    for (let i = 0; i + 4 <= rest.length; i++) expect(addressMatches(a, "segwit", DGB, "anywhere", rest.slice(i, i + 4))).toBe(true);
   });
 });
 
@@ -69,7 +84,7 @@ describe("WebAssembly agrees with the JavaScript code", () => {
   it("finds keys whose addresses really match", async () => {
     const { w, io } = await loadWasm();
     for (const kind of ["segwit", "taproot"] as const) {
-      for (const mode of ["prefix", "suffix"] as const) {
+      for (const mode of ["prefix", "suffix", "anywhere"] as const) {
         for (const net of [DGB, DGBT]) {
           const text = "dg";
           const start = randomKey();
@@ -77,7 +92,7 @@ describe("WebAssembly agrees with the JavaScript code", () => {
           b.set(start, 0);
           b.set(patternValues(text), 32);
           b.set(new TextEncoder().encode(net.hrp), 128);
-          expect(w.init(kind === "segwit" ? 0 : 1, mode === "prefix" ? 0 : 1, text.length, net.hrp.length)).toBe(0);
+          expect(w.init(kind === "segwit" ? 0 : 1, { prefix: 0, suffix: 1, anywhere: 2 }[mode], text.length, net.hrp.length)).toBe(0);
           let rc = 0;
           for (let i = 0; i < 1000 && rc === 0; i++) rc = w.run(1);
           expect(rc).toBe(1);

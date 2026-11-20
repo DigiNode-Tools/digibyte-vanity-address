@@ -1,6 +1,6 @@
 import { BECH32_CHARSET, KINDS, type AddressKind, type Network } from "./chains.ts";
 
-export type Mode = "prefix" | "suffix";
+export type Mode = "prefix" | "suffix" | "anywhere";
 
 export interface PatternCheck {
   ok: boolean;
@@ -38,14 +38,24 @@ export function patternValues(text: string): number[] {
   return [...text].map((c) => BECH32_CHARSET.indexOf(c));
 }
 
+/** Characters after the fixed start (e.g. "dgb1q"): the program, then a 6-character checksum. */
+export function tailLength(kind: AddressKind): number {
+  return kind === "segwit" ? 32 + 6 : 52 + 6;
+}
+
+/** Number of places the letters could be: one for first or last, every position for anywhere. */
+export function positions(length: number, mode: Mode, kind: AddressKind): number {
+  return mode === "anywhere" ? Math.max(1, tailLength(kind) - length + 1) : 1;
+}
+
 /** Average number of keys to check before finding a match. */
-export function expectedTries(length: number): number {
-  return 32 ** length;
+export function expectedTries(length: number, mode: Mode = "prefix", kind: AddressKind = "segwit"): number {
+  return Math.ceil(32 ** length / positions(length, mode, kind));
 }
 
 /** Chance of having found a match after checking `tries` keys. */
-export function chanceFound(length: number, tries: number): number {
-  return 1 - Math.exp(-tries / expectedTries(length));
+export function chanceFound(length: number, tries: number, mode: Mode = "prefix", kind: AddressKind = "segwit"): number {
+  return 1 - Math.exp(-tries / expectedTries(length, mode, kind));
 }
 
 /** The fixed start of every address of this type, e.g. "dgb1q". */
@@ -57,7 +67,9 @@ export function addressMatches(addr: string, kind: AddressKind, net: Network, mo
   const start = addressStart(kind, net);
   if (!addr.startsWith(start)) return false;
   const rest = addr.slice(start.length);
-  return mode === "prefix" ? rest.startsWith(text) : rest.endsWith(text);
+  if (mode === "prefix") return rest.startsWith(text);
+  if (mode === "suffix") return rest.endsWith(text);
+  return rest.includes(text);
 }
 
 /** "about 3 minutes" style time. */

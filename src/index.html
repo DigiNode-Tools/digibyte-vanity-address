@@ -71,6 +71,8 @@ h2 { color: var(--text-strong); font-size: 1.15rem; font-weight: 600; margin: 0 
 fieldset { border: 0; padding: 0; margin: 0 0 18px; }
 legend, .label { display: block; color: var(--text-strong); font-weight: 600; margin: 0 0 8px; padding: 0; }
 .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.choices.inline { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.choices.inline .choice small { display: inline; margin-left: 4px; }
 .choice { position: relative; display: block; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 10px 12px 10px 40px; cursor: pointer; }
 .choice input { position: absolute; left: 14px; top: 14px; margin: 0; accent-color: var(--accent); }
 .choice b { color: var(--text-strong); font-weight: 600; }
@@ -132,7 +134,7 @@ ol, ul { padding-left: 1.3em; }
 <main>
   <header class="standalone">
     <h1>DigiByte Vanity Address</h1>
-    <p class="lead">Make a DigiByte address that starts or ends with letters you choose. Everything happens on this device: nothing is sent anywhere.</p>
+    <p class="lead">Make a DigiByte address with letters you choose: at the start, the end or anywhere in it. Everything happens on this device: nothing is sent anywhere.</p>
   </header>
 
   <form id="form" class="card" autocomplete="off" novalidate>
@@ -149,6 +151,7 @@ ol, ul { padding-left: 1.3em; }
       <div class="choices inline">
         <label class="choice"><input type="radio" name="mode" value="prefix" checked> come first</label>
         <label class="choice"><input type="radio" name="mode" value="suffix"> come last</label>
+        <label class="choice"><input type="radio" name="mode" value="anywhere"> anywhere <small>much faster</small></label>
       </div>
     </fieldset>
 

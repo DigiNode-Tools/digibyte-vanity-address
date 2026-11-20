@@ -46,7 +46,7 @@ export class Search {
       w.onerror = (e) => this.fail(e.message || "a search thread stopped");
       const msg: StartMessage = {
         kind: KINDS[this.opts.kind].code,
-        mode: this.opts.mode === "prefix" ? 0 : 1,
+        mode: { prefix: 0, suffix: 1, anywhere: 2 }[this.opts.mode],
         pattern: patternValues(this.opts.pattern),
         hrp: this.opts.net.hrp,
         start: start.slice(),

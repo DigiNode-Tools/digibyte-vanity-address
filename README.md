@@ -1,6 +1,6 @@
 # DigiByte Vanity Address
 
-Make a DigiByte address that starts or ends with letters you choose, like `dgb1qdgnd…` or `dgb1q…cafe`. It runs entirely in your web browser: your private key is made on your own device and is never sent anywhere.
+Make a DigiByte address with letters you choose, at the start, the end or anywhere in it, like `dgb1qdgnd…` or `dgb1q…cafe`. It runs entirely in your web browser: your private key is made on your own device and is never sent anywhere.
 
 **Use it at [diginode.tools/digibyte-vanity-address](https://diginode.tools/digibyte-vanity-address/)**, or [download `digibyte-vanity-address.html`](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest/download/digibyte-vanity-address.html) from the [latest release](https://github.com/DigiNode-Tools/digibyte-vanity-address/releases/latest) and open it on a computer that isn't connected to the internet.
 
@@ -27,6 +27,8 @@ Each extra character makes a match 32 times rarer. On a 10-core laptop, in a bro
 | 7 | about 3 hours | days |
 
 These are averages: you may be lucky or unlucky.
+
+**Letters anywhere is much faster.** If your letters can be anywhere in the address, not just at the start or end, there are many more places they can appear: a 6-letter word fits in 33 places in a SegWit address and 53 in a Taproot one. So it's roughly 30–50 times faster, and 7 or 8 letters become practical in a browser.
 
 ## How it keeps your key safe
 

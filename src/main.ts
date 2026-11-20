@@ -73,8 +73,9 @@ function updateForm(): void {
     odds.textContent = "";
   } else {
     const shown = `<mark>${escape(text)}</mark>`;
-    preview.innerHTML = s.mode === "prefix" ? `${start}${shown}…` : `${start}…${shown}`;
-    const tries = expectedTries(text.length);
+    preview.innerHTML =
+      s.mode === "prefix" ? `${start}${shown}…` : s.mode === "suffix" ? `${start}…${shown}` : `${start}…${shown}…`;
+    const tries = expectedTries(text.length, s.mode, s.kind);
     const seconds = tries / speedFor(s.kind, s.threads);
     odds.textContent = `About 1 in ${tries.toLocaleString("en-GB")} addresses match. On this device that takes about ${friendlyDuration(seconds)}, but you could be lucky or unlucky.`;
     if (seconds > 3600) {
@@ -118,7 +119,7 @@ function startSearch(): void {
   search = new Search(opts, {
     progress(checked, perSecond) {
       const secs = (performance.now() - startedAt) / 1000;
-      const chance = chanceFound(text.length, checked);
+      const chance = chanceFound(text.length, checked, s.mode, s.kind);
       $("st-checked").textContent = checked.toLocaleString("en-GB");
       $("st-speed").textContent = Math.round(perSecond).toLocaleString("en-GB");
       $("st-time").textContent = friendlyDuration(secs).replace("under a second", "0s");
@@ -126,7 +127,7 @@ function startSearch(): void {
       $<HTMLDivElement>("st-bar").style.width = `${Math.min(100, chance * 100)}%`;
       if (secs > 2 && perSecond > 0) {
         measuredPerCore[s.kind] = perSecond / s.threads;
-        const left = (expectedTries(text.length) - checked) / perSecond;
+        const left = (expectedTries(text.length, s.mode, s.kind) - checked) / perSecond;
         $("st-note").textContent =
           left > 0 ? `On average, a match turns up in about ${friendlyDuration(left)} more.` : "Any moment now…";
       }
@@ -170,9 +171,8 @@ function highlighted(r: NonNullable<typeof current>): string {
   const start = addressStart(r.kind, r.net);
   const rest = r.addr.slice(start.length);
   const n = r.text.length;
-  return r.mode === "prefix"
-    ? `${start}<mark>${rest.slice(0, n)}</mark>${rest.slice(n)}`
-    : `${start}${rest.slice(0, rest.length - n)}<mark>${rest.slice(rest.length - n)}</mark>`;
+  const at = r.mode === "prefix" ? 0 : r.mode === "suffix" ? rest.length - n : rest.indexOf(r.text);
+  return `${start}${rest.slice(0, at)}<mark>${rest.slice(at, at + n)}</mark>${rest.slice(at + n)}`;
 }
 
 function showResult(): void {

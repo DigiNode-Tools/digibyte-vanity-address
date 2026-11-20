@@ -30,6 +30,8 @@ pub const KIND_P2WPKH: u32 = 0;
 pub const KIND_P2TR: u32 = 1;
 pub const MODE_PREFIX: u32 = 0;
 pub const MODE_SUFFIX: u32 = 1;
+/// The pattern may appear anywhere after the fixed start (hrp + "1" + version character).
+pub const MODE_ANYWHERE: u32 = 2;
 
 const BECH32_CONST: u32 = 1;
 const BECH32M_CONST: u32 = 0x2bc8_30a3;
@@ -85,7 +87,7 @@ pub extern "C" fn init(kind: u32, mode: u32, plen: u32, hlen: u32) -> i32 {
     let mut pattern = [0u8; MAX_PATTERN];
     let plen = plen as usize;
     let hlen = hlen as usize;
-    if kind > KIND_P2TR || mode > MODE_SUFFIX {
+    if kind > KIND_P2TR || mode > MODE_ANYWHERE {
         return -1;
     }
     if plen == 0 || plen > MAX_PATTERN || hlen == 0 || hlen > MAX_HRP {
@@ -302,8 +304,8 @@ impl Search {
         if self.mode == MODE_PREFIX {
             return pat.iter().enumerate().all(|(i, &v)| group5(program, i) == v);
         }
-        // Suffix: the address ends with the program's groups then a
-        // 6-character checksum, so build the checksum and compare the tail.
+        // Suffix and anywhere: the address continues with the program's groups
+        // then a 6-character checksum, so build the checksum too.
         let mut data = [0u8; 1 + 52 + 6];
         data[0] = self.kind as u8; // witness version
         for i in 0..groups {
@@ -332,6 +334,9 @@ impl Search {
         let tail = &data[1..n + 6];
         if pat.len() > tail.len() {
             return false;
+        }
+        if self.mode == MODE_ANYWHERE {
+            return tail.windows(pat.len()).any(|w| w == pat);
         }
         &tail[tail.len() - pat.len()..] == pat
     }
@@ -447,6 +452,31 @@ mod tests {
                     }
                 }
                 assert_eq!(found, Some(offset), "kind {kind}");
+            }
+        }
+    }
+
+    #[test]
+    fn anywhere_matches_middle_and_checksum() {
+        let k = key(9);
+        for kind in [KIND_P2WPKH, KIND_P2TR] {
+            let addr = address(kind, "dgb", &k);
+            let rest = &addr[5..]; // after "dgb1q" / "dgb1p"
+            let sc = scalar_from_bytes(&k).unwrap();
+            let p = ProjectivePoint::mul_by_generator(&sc).to_affine();
+            let prog: Vec<u8> = if kind == KIND_P2WPKH {
+                hash160_of(&p).to_vec()
+            } else {
+                taproot_output(&p, &tap_tag()).unwrap().to_affine().x().to_vec()
+            };
+            // Every 4-character window, including ones inside the checksum.
+            for start in 0..=rest.len() - 4 {
+                let pat: Vec<u8> = rest[start..start + 4]
+                    .bytes()
+                    .map(|c| CHARSET.iter().position(|&x| x == c).unwrap() as u8)
+                    .collect();
+                let s = Search::new(kind, MODE_ANYWHERE, &pat, b"dgb", &k).unwrap();
+                assert!(s.matches(&prog), "{addr} at {start}");
             }
         }
     }
